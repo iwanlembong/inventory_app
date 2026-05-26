@@ -1,0 +1,186 @@
+###
+POST http://localhost:4000/api/v1/auth/register
+Content-Type: application/json
+
+{
+  "storeName": "Toko Maju2",
+  "storeSlug": "toko-maju2",
+  "email": "owner2@test.com",
+  "password": "123456"
+}
+
+###
+POST http://localhost:4000/api/v1/categories
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInRlbmFudElkIjozLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk1MTQzMDgsImV4cCI6MTc4MDExOTEwOH0.S9kUo7rJxD9D9m6ChcKnF3u4qaSqRzsOAXpeGnOQu_U
+Content-Type: application/json
+
+{
+  "name": "Elektronik",
+  "slug": "elektronik"
+}
+
+###
+GET http://localhost:4000/api/v1/categories
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInRlbmFudElkIjozLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk1MTQzMDgsImV4cCI6MTc4MDExOTEwOH0.S9kUo7rJxD9D9m6ChcKnF3u4qaSqRzsOAXpeGnOQu_U
+
+###
+GET http://localhost:4000/api/v1/categories/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInRlbmFudElkIjozLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk1MTQzMDgsImV4cCI6MTc4MDExOTEwOH0.S9kUo7rJxD9D9m6ChcKnF3u4qaSqRzsOAXpeGnOQu_U
+
+###
+PUT http://localhost:4000/api/v1/categories/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInRlbmFudElkIjozLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk1MTQzMDgsImV4cCI6MTc4MDExOTEwOH0.S9kUo7rJxD9D9m6ChcKnF3u4qaSqRzsOAXpeGnOQu_U
+Content-Type: application/json
+
+{
+  "name": "Elektronik Baru",
+  "slug": "elektronik-baru"
+}
+
+###
+DELETE http://localhost:4000/api/v1/categories/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjIsInRlbmFudElkIjozLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk1MTQzMDgsImV4cCI6MTc4MDExOTEwOH0.S9kUo7rJxD9D9m6ChcKnF3u4qaSqRzsOAXpeGnOQu_U
+
+###
+POST http://localhost:4000/api/v1/auth/login
+Content-Type: application/json
+
+{
+  "email": "owner@test.com",
+  "password": "123456"
+}
+
+###
+GET http://localhost:4000/api/v1/auth/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+POST http://localhost:4000/api/v1/auth/refresh-token
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+POST http://localhost:4000/api/v1/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "categoryId": 2,
+  "name": "Laptop Asus",
+  "slug": "laptop-asus",
+  "sku": "SKU001",
+  "description": "Laptop gaming",
+  "costPrice": 7000000,
+  "sellingPrice": 8500000
+}
+
+
+###
+GET http://localhost:4000/api/v1/products
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+
+###
+POST http://localhost:4000/api/v1/stocks
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "productId": 2,
+  "type": "IN",
+  "quantity": 10,
+  "note": "Restock awal"
+}
+
+###
+POST http://localhost:4000/api/v1/stocks
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "productId": 2,
+  "type": "OUT",
+  "quantity": 2,
+  "note": "Penjualan"
+}
+
+###
+GET http://localhost:4000/api/v1/stocks
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+POST http://localhost:4000/api/v1/suppliers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "name": "PT Maju Mundur",
+  "phone": "08215266622",
+  "email": "majumundur@test.com",
+  "address": "Bali"
+}
+
+###
+GET http://localhost:4000/api/v1/suppliers
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+GET http://localhost:4000/api/v1/suppliers/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+PUT http://localhost:4000/api/v1/suppliers/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "name": "PT Supplier Baru",
+  "phone": "089999999",
+  "email": "baru@test.com",
+  "address": "Bandung"
+}
+
+###
+DELETE http://localhost:4000/api/v1/suppliers/1
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+POST http://localhost:4000/api/v1/purchases
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "supplierId": 2,
+  "invoiceNumber": "PO-001",
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 10,
+      "costPrice": 7000000
+    }
+  ]
+}
+
+###
+POST http://localhost:4000/api/v1/sales
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Content-Type: application/json
+
+{
+  "invoiceNumber": "INV-001",
+  "items": [
+    {
+      "productId": 2,
+      "quantity": 2,
+      "sellingPrice": 8500000
+    }
+  ]
+}
+
+###
+GET http://localhost:4000/api/v1/dashboard/summary
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+GET http://localhost:4000/api/v1/audit-logs
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
