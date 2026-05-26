@@ -97,7 +97,7 @@ model Product {
   costPrice     Decimal   @db.Decimal(10,2)
   sellingPrice  Decimal   @db.Decimal(10,2)
 
-  imageUrl      String?
+  thumbnail     String?
 
   isActive      Boolean   @default(true)
 
