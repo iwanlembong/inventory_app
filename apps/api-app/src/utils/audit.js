@@ -1,41 +1,46 @@
 const { prisma } =
     require("@inventory/database");
 
-exports.createAuditLog = async ({
-  tx,
-  
-  tenantId,
+exports.createAuditLog =
+    async ({
 
-  userId,
+        tx,
 
-  action,
+        tenantId,
 
-  entity,
+        userId,
 
-  entityId,
+        action,
 
-  data,
+        entity,
 
-}) => {
+        entityId,
 
-  return tx.auditLog.create({
+        data,
 
-    data: {
+    }) => {
 
-      tenantId,
+        const db =
+            tx || prisma;
 
-      userId,
+        return db.auditLog.create({
 
-      action,
+            data: {
 
-      entity,
+                tenantId,
 
-      entityId,
+                userId,
 
-      data,
+                action,
 
-    },
+                entity,
 
-  });
+                entityId,
+
+                data,
+
+            },
+
+        });
 
 };

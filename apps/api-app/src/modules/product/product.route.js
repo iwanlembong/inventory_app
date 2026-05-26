@@ -35,7 +35,6 @@ router.post(
     "OWNER",
     "ADMIN"
   ),
-  upload.single("image"),
   controller.create
 );
 
@@ -66,7 +65,6 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  upload.single("image"),
   controller.update
 );
 

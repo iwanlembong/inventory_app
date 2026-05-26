@@ -136,7 +136,7 @@ exports.update = async (
         });
 
     await createAuditLog({
-       
+
         tenantId,
 
         userId,
@@ -188,30 +188,55 @@ exports.remove = async (
 };
 
 exports.uploadImages = async (
+
     id,
+
     files,
+
     tenantId
+
 ) => {
 
-    await exports.findById(id, tenantId);
+    await exports.findById(
 
-    const images = files.map((file) => ({
-        productId: Number(id),
-        imageUrl: file.filename,
-    }));
+        id,
+
+        tenantId
+
+    );
+
+    const images =
+        files.map((file) => ({
+
+            productId:
+                Number(id),
+
+            imageUrl:
+                `/uploads/products/${file.filename}`,
+
+        }));
 
     await prisma.productImage.createMany({
+
         data: images,
+
     });
 
     return prisma.product.findUnique({
+
         where: {
+
             id: Number(id),
+
         },
 
         include: {
+
             images: true,
+
         },
+
     });
 
 };
+
