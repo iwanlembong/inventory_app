@@ -12,6 +12,7 @@ const {
 } = require(
   "../../middlewares/role.middleware"
 );
+const { ROLES } = require("../../constants/roles");
 
 const router = express.Router();
 
@@ -19,9 +20,9 @@ router.get(
   "/summary",
   authMiddleware,
   roleMiddleware(
-    "OWNER",
-    "ADMIN",
-    "CASHIER"
+    ROLES.OWNER,
+    ROLES.ADMIN,
+    ROLES.CASHIER
   ),
   controller.summary
 );

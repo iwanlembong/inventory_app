@@ -11,6 +11,6 @@ router.post("/login", controller.login);
 
 router.get("/me", authMiddleware, controller.me);
 
-router.post("/refresh-token", authMiddleware, controller.refreshToken);
+router.post("/refresh-token", controller.refreshToken);
 
 module.exports = router;

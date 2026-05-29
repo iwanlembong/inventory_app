@@ -6,17 +6,19 @@ const {
 } = require("../../utils/audit");
 const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
 
+/* ===================================================== */
+/* CREATE STOCK MOVEMENT                                 */
+/* ===================================================== */
 exports.create = async (
     payload,
-    tenantId
+    tenantId,
+    userId
 ) => {
-
     const product =
         await prisma.product.findFirst({
             where: {
                 id: payload.productId,
                 tenantId,
-                userId
             },
         });
 
@@ -24,108 +26,172 @@ exports.create = async (
         throw new Error("Product not found");
     }
 
-    let updatedStock = product.stock;
+    const beforeStock =
+        product.stock;
 
+    let afterStock =
+        beforeStock;
+
+    /* ====================== */
+    /* STOCK IN               */
+    /* ====================== */
     if (payload.type === "IN") {
-        updatedStock += payload.quantity;
+        afterStock = beforeStock + payload.quantity;
     }
 
+    /* ====================== */
+    /* STOCK OUT              */
+    /* ====================== */
     if (payload.type === "OUT") {
-
-        if (product.stock < payload.quantity) {
+        if (beforeStock < payload.quantity) {
             throw new Error("Insufficient stock");
         }
 
-        updatedStock -= payload.quantity;
+        afterStock = beforeStock - payload.quantity;
     }
 
+    /* ====================== */
+    /* ADJUSTMENT             */
+    /* ====================== */
     if (payload.type === "ADJUSTMENT") {
-        updatedStock = payload.quantity;
+        afterStock = payload.quantity;
     }
 
-    await prisma.stockMovement.create({
-        data: {
-            tenantId,
+    /* ====================== */
+    /* TRANSACTION            */
+    /* ====================== */
+    const result =
+        await prisma.$transaction(
+            async (tx) => {
+                /* UPDATE PRODUCT */
+                const updatedProduct =
+                    await tx.product.update({
+                        where: {
+                            id: payload.productId,
+                        },
+                        data: {
+                            stock: afterStock,
+                        },
+                    });
 
-            productId: payload.productId,
+                /* CREATE MOVEMENT */
+                await tx.stockMovement.create({
+                    data: {
+                        tenantId,
+                        productId: payload.productId,
+                        userId, type: payload.type,
+                        quantity: payload.quantity,
+                        beforeStock,
+                        afterStock,
+                        note: payload.note,
+                    },
+                });
 
-            type: payload.type,
-
-            quantity: payload.quantity,
-
-            note: payload.note,
-        },
-    });
-
-    const updatedProduct =
-        await prisma.product.update({
-            where: {
-                id: payload.productId,
-            },
-
-            data: {
-                stock: updatedStock,
-            },
-        });
-
-    await createAuditLog({
-        tx,
-
-        tenantId,
-
-        userId,
-
-        action: AUDIT_ACTIONS.UPDATE_STOCK,
-
-        entity: "PRODUCT",
-
-        entityId: updatedProduct.id,
-
-        data: {
-
-            productId:
-                payload.productId,
-
-            type:
-                payload.type,
-
-            quantity:
-                payload.quantity,
-
-            previousStock:
-                product.stock,
-
-            currentStock:
-                updatedProduct.stock,
-
-            note:
-                payload.note,
-
-        },
-
-    });
-
-    return updatedProduct
+                /* AUDIT LOG */
+                await createAuditLog({
+                    tx,
+                    tenantId,
+                    userId,
+                    action: AUDIT_ACTIONS.UPDATE_STOCK,
+                    entity: "PRODUCT",
+                    entityId: updatedProduct.id,
+                    data: {
+                        productId: payload.productId,
+                        type: payload.type,
+                        quantity: payload.quantity,
+                        previousStock: beforeStock,
+                        currentStock: afterStock,
+                        note: payload.note,
+                    },
+                });
+                return updatedProduct;
+            });
+    return result;
 };
 
+/* ===================================================== */
+/* GET ALL STOCK MOVEMENTS                               */
+/* ===================================================== */
 exports.findAll = async (
-    tenantId
+    tenantId,
+    {
+        page,
+        limit,
+        search,
+        type,
+    }
 ) => {
+    const skip =
+        (page - 1) * limit;
+    const where = {
+        tenantId,
+        ...(type && {
+            type,
+        }),
+        ...(search && {
+            product: {
+                name: {
+                    contains: search,
+                },
+            },
+        }),
+    };
+    const [items, total] =
+        await prisma.$transaction([
+            prisma.stockMovement.findMany({
+                where,
+                include: {
+                    product: true,
+                    user: {
+                        select: {
+                            id: true,
+                            email: true,
+                            role: true,
+                        },
+                    },
+                },
+                skip,
+                take: limit,
+                orderBy: {
+                    id: "desc",
+                },
+            }),
+            prisma.stockMovement.count({
+                where,
+            }),
+        ]);
 
-    return prisma.stockMovement.findMany({
+    return {
+        items,
+        pagination: {
+            total,
+            page,
+            limit,
+            totalPages:
+                Math.ceil(total / limit),
+        },
+    };
+};
 
+exports.findByProductId = async (tenantId, productId) => {
+    const items = await prisma.stockMovement.findMany({
         where: {
             tenantId,
+            productId,
         },
-
         include: {
-            product: true,
+            user: {
+                select: {
+                    id: true,
+                    email: true,
+                    role: true,
+                },
+            },
         },
-
         orderBy: {
             id: "desc",
         },
-
     });
 
+    return items;
 };

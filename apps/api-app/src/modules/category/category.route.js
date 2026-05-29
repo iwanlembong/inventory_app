@@ -11,13 +11,17 @@ const {
 } = require(
   "../../middlewares/role.middleware"
 );
+const { ROLES } = require("../../constants/roles");
 
 const router = express.Router();
 
 router.post(
   "/",
   authMiddleware,
-  roleMiddleware("OWNER"),
+  roleMiddleware(
+    ROLES.OWNER,
+    ROLES.ADMIN
+  ),
   controller.create
 );
 
@@ -36,14 +40,20 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
-  roleMiddleware("OWNER", "ADMIN"),
+  roleMiddleware(
+    ROLES.OWNER,
+    ROLES.ADMIN
+  ),
   controller.update
 );
 
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("OWNER"),
+  roleMiddleware(
+    ROLES.OWNER,
+    ROLES.ADMIN
+  ),
   controller.remove
 );
 

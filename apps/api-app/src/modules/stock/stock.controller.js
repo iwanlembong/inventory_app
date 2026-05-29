@@ -4,6 +4,7 @@ const {
   stockSchema,
 } = require("./stock.validation");
 
+
 exports.create = async (
   req,
   res
@@ -21,14 +22,20 @@ exports.create = async (
         req.user.userId
       );
 
-    res.json({
+    res.status(201).json({
       success: true,
       data: result,
     });
 
   } catch (err) {
+    const errorMap = {
+      "Product not found": 404,
+      "Insufficient stock": 400,
+    };
 
-    res.status(400).json({
+    const status =
+      errorMap[err.message] || 500;
+    res.status(status).json({
       success: false,
       message: err.message,
     });
@@ -44,9 +51,20 @@ exports.findAll = async (
 
   try {
 
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const search = req.query.search || "";
+    const type = req.query.type || "";
+
     const result =
       await service.findAll(
-        req.user.tenantId
+        req.user.tenantId,
+        {
+          page,
+          limit,
+          search,
+          type,
+        }
       );
 
     res.json({
@@ -63,4 +81,27 @@ exports.findAll = async (
 
   }
 
+};
+
+exports.getByProductId = async (req, res, next) => {
+  try {
+    console.log("REQ PARAM:", req.params);
+    console.log("USER:", req.user);
+
+    const tenantId = req.user.tenantId;
+    const productId = Number(req.params.productId);
+
+    const data = await service.findByProductId(
+      tenantId,
+      productId
+    );
+
+    res.json({
+      success: true,
+      data,
+    });
+  } catch (err) {
+     console.error("STOCK HISTORY ERROR:", err);
+    next(err);
+  }
 };

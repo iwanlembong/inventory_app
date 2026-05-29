@@ -56,7 +56,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlb
 
 ###
 POST http://localhost:4000/api/v1/auth/refresh-token
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODAwMjE2ODQsImV4cCI6MTc4MDAyMTY5NH0.Aw2nT6fXLoD1GsGR5NBZ098JOdtupIgx3Dn4H4MLqoc
 
 ###
 POST http://localhost:4000/api/v1/products
@@ -73,6 +73,14 @@ Content-Type: application/json
   "sellingPrice": 8500000
 }
 
+
+###
+PUT http://localhost:4000/api/v1/products/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+{
+  
+}
 
 ###
 GET http://localhost:4000/api/v1/products
@@ -184,3 +192,6 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlb
 GET http://localhost:4000/api/v1/audit-logs
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
 
+###
+POST http://localhost:4000/api/v1/auth/refresh-token
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
