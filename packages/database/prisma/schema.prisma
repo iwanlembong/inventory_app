@@ -25,13 +25,14 @@ model Tenant {
   name String
   slug String @unique
 
-  users      User[]
-  categories Category[]
-  products   Product[]
+  users          User[]
+  categories     Category[]
+  products       Product[]
+  productImages  ProductImage[]
   stockMovements StockMovement[]
-  suppliers Supplier[]
-  purchases Purchase[]
-  sales Sale[]
+  suppliers      Supplier[]
+  purchases      Purchase[]
+  sales          Sale[]
 
   createdAt DateTime @default(now())
 }
@@ -46,6 +47,8 @@ model User {
   role UserRole @default(OWNER)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  stockMovements StockMovement[]
 
   createdAt DateTime @default(now())
 }
@@ -68,50 +71,54 @@ model Category {
 }
 
 model ProductImage {
-  id          Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  productId   Int
+  tenantId Int?
 
-  imageUrl    String
+  productId Int
 
-  product     Product   @relation(fields: [productId], references: [id])
+  imageUrl String
 
-  createdAt   DateTime  @default(now())
+  product Product @relation(fields: [productId], references: [id])
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id])
+
+  createdAt DateTime @default(now())
 }
 
 model Product {
-  id            Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tenantId      Int
-  categoryId    Int?
+  tenantId   Int
+  categoryId Int?
 
-  name          String
-  slug          String
+  name String
+  slug String
 
-  sku           String
+  sku String
 
-  description   String?   @db.Text
+  description String? @db.Text
 
-  stock         Int       @default(0)
+  stock Int @default(0)
 
-  costPrice     Decimal   @db.Decimal(10,2)
-  sellingPrice  Decimal   @db.Decimal(10,2)
+  costPrice    Decimal @db.Decimal(10, 2)
+  sellingPrice Decimal @db.Decimal(10, 2)
 
-  thumbnail     String?
+  thumbnail String?
 
-  isActive      Boolean   @default(true)
+  isActive Boolean @default(true)
 
-  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
-  category      Category? @relation(fields: [categoryId], references: [id])
+  category Category? @relation(fields: [categoryId], references: [id])
 
   stockMovements StockMovement[]
-  images ProductImage[]
-  purchaseItems PurchaseItem[]
-  saleItems SaleItem[]
+  images         ProductImage[]
+  purchaseItems  PurchaseItem[]
+  saleItems      SaleItem[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum StockMovementType {
@@ -121,41 +128,50 @@ enum StockMovementType {
 }
 
 model StockMovement {
-  id            Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tenantId      Int
-  productId     Int
+  tenantId Int
 
-  type          StockMovementType
+  productId Int
 
-  quantity      Int
+  userId Int
 
-  note          String?
+  type StockMovementType
 
-  product       Product   @relation(fields: [productId], references: [id])
+  quantity Int
 
-  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  beforeStock Int?
 
-  createdAt     DateTime  @default(now())
+  afterStock Int?
+
+  note String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  product Product @relation(fields: [productId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 }
 
 model Supplier {
-  id            Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tenantId      Int
+  tenantId Int
 
-  name          String
+  name String
 
-  email         String?
-  phone         String?
-  address       String?   @db.Text
+  email   String?
+  phone   String?
+  address String? @db.Text
 
-  tenant        Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
-  purchases     Purchase[]
+  purchases Purchase[]
 
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum PurchaseStatus {
@@ -165,41 +181,41 @@ enum PurchaseStatus {
 }
 
 model Purchase {
-  id              Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tenantId        Int
-  supplierId      Int
+  tenantId   Int
+  supplierId Int
 
-  invoiceNumber   String
+  invoiceNumber String
 
-  totalAmount     Decimal   @db.Decimal(12,2)
+  totalAmount Decimal @db.Decimal(12, 2)
 
-  status          PurchaseStatus @default(COMPLETED)
+  status PurchaseStatus @default(COMPLETED)
 
-  supplier         Supplier  @relation(fields: [supplierId], references: [id])
+  supplier Supplier @relation(fields: [supplierId], references: [id])
 
-  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
-  items            PurchaseItem[]
+  items PurchaseItem[]
 
-  createdAt        DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model PurchaseItem {
-  id              Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  purchaseId      Int
-  productId       Int
+  purchaseId Int
+  productId  Int
 
-  quantity        Int
+  quantity Int
 
-  costPrice       Decimal   @db.Decimal(10,2)
+  costPrice Decimal @db.Decimal(10, 2)
 
-  subtotal        Decimal   @db.Decimal(12,2)
+  subtotal Decimal @db.Decimal(12, 2)
 
-  purchase        Purchase  @relation(fields: [purchaseId], references: [id])
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
 
-  product         Product   @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 enum SalesStatus {
@@ -209,56 +225,55 @@ enum SalesStatus {
 }
 
 model Sale {
-  id              Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  tenantId        Int
+  tenantId Int
 
-  invoiceNumber   String
+  invoiceNumber String
 
-  totalAmount     Decimal   @db.Decimal(12,2)
+  totalAmount Decimal @db.Decimal(12, 2)
 
-  status          SalesStatus @default(PAID)
+  status SalesStatus @default(PAID)
 
-  tenant          Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
-  items           SaleItem[]
+  items SaleItem[]
 
-  createdAt       DateTime  @default(now())
+  createdAt DateTime @default(now())
 }
 
 model SaleItem {
-  id              Int       @id @default(autoincrement())
+  id Int @id @default(autoincrement())
 
-  saleId          Int
+  saleId Int
 
-  productId       Int
+  productId Int
 
-  quantity        Int
+  quantity Int
 
-  sellingPrice    Decimal   @db.Decimal(10,2)
+  sellingPrice Decimal @db.Decimal(10, 2)
 
-  subtotal        Decimal   @db.Decimal(12,2)
+  subtotal Decimal @db.Decimal(12, 2)
 
-  sale            Sale      @relation(fields: [saleId], references: [id])
+  sale Sale @relation(fields: [saleId], references: [id])
 
-  product         Product   @relation(fields: [productId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
 }
 
 model AuditLog {
+  id Int @id @default(autoincrement())
 
-  id          Int       @id @default(autoincrement())
+  tenantId Int
 
-  tenantId    Int
+  userId Int
 
-  userId      Int
+  action String
 
-  action      String
+  entity String
 
-  entity      String
+  entityId Int?
 
-  entityId    Int?
+  data Json?
 
-  data        Json?
-
-  createdAt   DateTime  @default(now())
+  createdAt DateTime @default(now())
 }

@@ -10,21 +10,48 @@ exports.register = async (req, res) => {
   try {
 
     const validated =
-      registerSchema.parse(req.body);
+      registerSchema.parse(
+        req.body
+      );
 
     const result =
-      await service.register(validated);
+      await service.register(
+        validated
+      );
 
-    res.status(201).json({
+    // 🔐 SET REFRESH TOKEN COOKIE
+    res.cookie("refreshToken", result.refreshToken,
+      {
+        httpOnly: true,
+        secure: false, // true kalau production HTTPS
+        sameSite: "lax",
+        path: "/",
+        maxAge:
+          7 * 24 * 60 * 60 * 1000,
+      }
+    );
+
+    return res.status(201).json({
+
       success: true,
-      data: result,
+
+      data: {
+        user:
+          result.user,
+        accessToken:
+          result.accessToken,
+      },
+
     });
 
   } catch (err) {
 
-    res.status(400).json({
+    return res.status(400).json({
+
       success: false,
+
       message: err.message,
+
     });
 
   }
@@ -35,15 +62,30 @@ exports.login = async (req, res) => {
 
   try {
 
-    const validated =
-      loginSchema.parse(req.body);
-
     const result =
-      await service.login(validated);
+      await service.login(
+        req.body
+      );
+
+    // 🔐 SET COOKIE
+    res.cookie("refreshToken", result.refreshToken,
+      {
+        httpOnly: true,
+        secure: false,
+        sameSite: "lax",
+        path: "/",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      }
+    );
 
     res.json({
       success: true,
-      data: result,
+      data: {
+
+        user: result.user,
+        accessToken: result.accessToken,
+      },
+
     });
 
   } catch (err) {
@@ -83,9 +125,10 @@ exports.me = async (req, res) => {
 exports.refreshToken = async (req, res) => {
 
   try {
+    const refreshToken = req.cookies.refreshToken;
 
     const result =
-      await service.refreshToken(req.user);
+      await service.refreshToken(refreshToken);
 
     res.json({
       success: true,

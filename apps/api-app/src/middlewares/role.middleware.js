@@ -1,17 +1,19 @@
-exports.roleMiddleware = (...roles) => {
+exports.roleMiddleware = (...allowedRoles) => {
+    return (req, res, next) => {
 
-  return (req, res, next) => {
+      const userRole = req.user.role;
 
-    if (!roles.includes(req.user.role)) {
+      if (!allowedRoles.includes(userRole)) {
 
-      return res.status(403).json({
-        message: "Forbidden",
-      });
+        return res.status(403).json({
+          success: false,
+          message:
+            "Forbidden Access",
+        });
+      }
 
-    }
+      next();
 
-    next();
+    };
 
   };
-
-};

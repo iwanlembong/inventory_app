@@ -6,6 +6,7 @@ const {
     createAuditLog,
 } = require("../../utils/audit");
 const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
+const { validateTenantCategory } = require("../../utils/validateTenantCategory");
 
 exports.create = async (
     payload,
@@ -13,25 +14,43 @@ exports.create = async (
     userId
 ) => {
 
+    await validateTenantCategory(
+        payload.categoryId,
+        tenantId
+    );
+
     const sku = payload.sku || `SKU-${Date.now()}`;
 
     const product =
+
         await prisma.product.create({
 
             data: {
 
                 tenantId,
 
-                name: payload.name,
-
-                sku: sku,
-
-                price: payload.price,
-
-                stock: payload.stock,
-
                 categoryId:
                     payload.categoryId,
+
+                name:
+                    payload.name,
+
+                slug:
+                    payload.slug,
+
+                sku,
+
+                description:
+                    payload.description,
+
+                stock:
+                    payload.stock,
+
+                costPrice:
+                    payload.costPrice,
+
+                sellingPrice:
+                    payload.sellingPrice,
 
             },
 
@@ -66,6 +85,7 @@ exports.findAll = async (tenantId) => {
 
         include: {
             category: true,
+            images: true,
         },
 
         orderBy: {
@@ -108,6 +128,11 @@ exports.update = async (
 ) => {
 
     await exports.findById(id, tenantId);
+
+    await validateTenantCategory(
+        payload.categoryId,
+        tenantId
+    );
 
     const sku = payload.sku || `SKU-${Date.now()}`;
 
@@ -157,7 +182,8 @@ exports.update = async (
 
 exports.remove = async (
     id,
-    tenantId
+    tenantId,
+    userId
 ) => {
 
     await exports.findById(id, tenantId);
@@ -208,6 +234,8 @@ exports.uploadImages = async (
     const images =
         files.map((file) => ({
 
+            tenantId,
+
             productId:
                 Number(id),
 
@@ -216,11 +244,59 @@ exports.uploadImages = async (
 
         }));
 
+    /* ====================== */
+    /* SAVE IMAGES */
+    /* ====================== */
     await prisma.productImage.createMany({
 
         data: images,
 
     });
+
+    /* ====================== */
+    /* GET PRODUCT */
+    /* ====================== */
+    const product =
+        await prisma.product.findUnique({
+
+            where: {
+
+                id: Number(id),
+
+            },
+
+        });
+
+    /* ====================== */
+    /* AUTO SET THUMBNAIL */
+    /* ====================== */
+
+    if (
+
+        !product.thumbnail &&
+
+        images.length > 0
+
+    ) {
+
+        await prisma.product.update({
+
+            where: {
+
+                id: Number(id),
+
+            },
+
+            data: {
+
+                thumbnail:
+                    images[0].imageUrl,
+
+            },
+
+        });
+
+    }
 
     return prisma.product.findUnique({
 
@@ -240,3 +316,155 @@ exports.uploadImages = async (
 
 };
 
+exports.deleteImage =
+    async (
+
+        imageId,
+
+        tenantId
+
+    ) => {
+
+        const image =
+            await prisma.productImage.findUnique({
+
+                where: {
+
+                    id: Number(imageId),
+
+                },
+
+                include: {
+
+                    product: true,
+
+                },
+
+            });
+
+        if (!image) {
+
+            throw new Error(
+                "Image not found"
+            );
+
+        }
+
+        if (
+
+            image.product.tenantId !==
+            tenantId
+
+        ) {
+
+            throw new Error(
+                "Unauthorized"
+            );
+
+        }
+
+        /* DELETE FILE */
+
+        const filePath =
+            path.join(
+
+                process.cwd(),
+
+                image.imageUrl
+
+            );
+
+        if (
+            fs.existsSync(filePath)
+        ) {
+
+            fs.unlinkSync(filePath);
+
+        }
+
+        /* DELETE DB */
+
+        await prisma.productImage.delete({
+
+            where: {
+
+                id: Number(imageId),
+
+            },
+
+        });
+
+        return true;
+
+    };
+
+exports.setThumbnail =
+    async (
+        imageId,
+        tenantId
+    ) => {
+
+        /* ====================== */
+        /* FIND IMAGE */
+        /* ====================== */
+
+        const image =
+            await prisma.productImage.findUnique({
+
+                where: {
+                    id: Number(imageId),
+                },
+
+                include: {
+                    product: true,
+                },
+
+            });
+
+        if (!image) {
+
+            throw new Error(
+                "Image not found"
+            );
+
+        }
+
+        /* ====================== */
+        /* VALIDATE TENANT */
+        /* ====================== */
+
+        if (
+
+            image.product.tenantId !==
+            tenantId
+
+        ) {
+
+            throw new Error(
+                "Unauthorized"
+            );
+
+        }
+
+        /* ====================== */
+        /* UPDATE THUMBNAIL */
+        /* ====================== */
+
+        await prisma.product.update({
+
+            where: {
+                id: image.productId,
+            },
+
+            data: {
+
+                thumbnail:
+                    image.imageUrl,
+
+            },
+
+        });
+
+        return true;
+
+    };

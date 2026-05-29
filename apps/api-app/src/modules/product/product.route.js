@@ -20,6 +20,7 @@ const {
 } = require(
   "../../middlewares/role.middleware"
 );
+const { ROLES } = require("../../constants/roles");
 
 const router =
   express.Router();
@@ -32,9 +33,10 @@ router.post(
   "/",
   authMiddleware,
   roleMiddleware(
-    "OWNER",
-    "ADMIN"
+    ROLES.OWNER,
+    ROLES.ADMIN
   ),
+  upload.array("images", 5),
   controller.create
 );
 
@@ -65,6 +67,11 @@ router.get(
 router.put(
   "/:id",
   authMiddleware,
+  roleMiddleware(
+    ROLES.OWNER,
+    ROLES.ADMIN
+  ),
+  upload.array("images", 5),
   controller.update
 );
 
@@ -75,7 +82,10 @@ router.put(
 router.delete(
   "/:id",
   authMiddleware,
-  roleMiddleware("OWNER"),
+  roleMiddleware(
+    ROLES.OWNER,
+    ROLES.ADMIN
+  ),
   controller.remove
 );
 
@@ -88,6 +98,26 @@ router.post(
   authMiddleware,
   upload.array("images", 5),
   controller.uploadImages
+);
+
+/* ====================== */
+/* DELETE SINGLE IMAGE */
+/* ====================== */
+
+router.delete(
+
+  "/image/:imageId",
+
+  authMiddleware,
+
+  controller.deleteImage
+
+);
+
+router.patch(
+  "/images/:imageId/thumbnail",
+  authMiddleware,
+  controller.setThumbnail
 );
 
 module.exports = router;
