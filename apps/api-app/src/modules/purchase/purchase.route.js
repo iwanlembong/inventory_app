@@ -21,10 +21,17 @@ router.get(
   controller.findAll
 );
 
+
 router.get(
   "/:id",
   authMiddleware,
   controller.findById
+);
+
+router.get(
+    "/:id/pdf",
+    authMiddleware,
+    controller.downloadPdf
 );
 
 module.exports = router;

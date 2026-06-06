@@ -27,6 +27,12 @@ router.get(
 );
 
 router.get(
+    "/latest",
+    authMiddleware,
+    controller.findLatest
+);
+
+router.get(
     "/:id",
 
     authMiddleware,
@@ -37,5 +43,7 @@ router.get(
 
     controller.findById
 );
+
+
 
 module.exports = router;

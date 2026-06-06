@@ -1,197 +1,416 @@
-const { prisma } =
-    require("@inventory/database");
+const { prisma } = require("@inventory/database");
+const { createAuditLog } = require("../../utils/audit");
+
+/* ====================== */
+/* INVOICE GENERATOR (RACE SAFE + TX SAFE) */
+/* ====================== */
+
+const generateInvoice = async (tx, tenantId) => {
+
+    const dateStr = new Date()
+        .toISOString()
+        .slice(0, 10)
+        .replace(/-/g, '');
+
+    const prefix = "PUR";
+
+    // 🔥 ambil sequence terakhir dalam transaction context
+    const lastSeq = await tx.invoiceSequence.findFirst({
+        where: {
+            tenantId,
+            prefix,
+            dateKey: dateStr,
+        },
+        orderBy: {
+            sequence: "desc",
+        },
+    });
+
+    const nextSeq = lastSeq ? lastSeq.sequence + 1 : 1;
+
+    // 🔥 insert sequence baru dalam TX (aman dari race condition)
+    await tx.invoiceSequence.create({
+        data: {
+            tenantId,
+            prefix,
+            dateKey: dateStr,
+            sequence: nextSeq,
+        },
+    });
+
+    return `${prefix}-${dateStr}-${String(nextSeq).padStart(4, "0")}`;
+};
+
+/* ====================== */
+/* CREATE PURCHASE */
+/* ====================== */
 
 exports.create = async (
     payload,
-    tenantId
+    tenantId,
+    userId
 ) => {
 
-    const supplier =
-        await prisma.supplier.findFirst({
-
-            where: {
-                id: payload.supplierId,
-                tenantId,
-            },
-
-        });
-
-    if (!supplier) {
-        throw new Error(
-            "Supplier not found"
-        );
-    }
-
-    let totalAmount = 0;
-
-    for (const item of payload.items) {
-
-        totalAmount +=
-            item.quantity *
-            item.costPrice;
-
-    }
+    console.log(
+        "PURCHASE PAYLOAD:",
+        JSON.stringify(payload, null, 2)
+    );
 
     return prisma.$transaction(
         async (tx) => {
 
+            /* ====================== */
+            /* VALIDATE SUPPLIER */
+            /* ====================== */
+
+            const supplier =
+                await tx.supplier.findFirst({
+                    where: {
+                        id: payload.supplierId,
+                        tenantId,
+                    },
+                });
+
+            if (!supplier) {
+                throw new Error(
+                    "Supplier not found"
+                );
+            }
+
+            /* ====================== */
+            /* GENERATE INVOICE */
+            /* ====================== */
+
+            const invoiceNumber =
+                await generateInvoice(
+                    tx,
+                    tenantId
+                );
+
+            /* ====================== */
+            /* CALCULATE TOTALS */
+            /* ====================== */
+
+            let subtotal = 0;
+
+            const discount =
+                Number(
+                    payload.discount || 0
+                );
+
+            const tax =
+                Number(
+                    payload.tax || 0
+                );
+
+            /* ====================== */
+            /* CREATE PURCHASE */
+            /* ====================== */
+
             const purchase =
                 await tx.purchase.create({
-
                     data: {
-
                         tenantId,
-
                         supplierId:
                             payload.supplierId,
+                        invoiceNumber,
 
-                        invoiceNumber:
-                            payload.invoiceNumber,
+                        subtotal: 0,
+                        discount,
+                        discountAmount: 0,
 
-                        totalAmount,
+                        tax,
+                        taxAmount: 0,
 
-                        status: "COMPLETED",
+                        totalAmount: 0,
 
+                        status:
+                            "COMPLETED",
                     },
-
                 });
+
+            /* ====================== */
+            /* PROCESS ITEMS */
+            /* ====================== */
 
             for (const item of payload.items) {
 
-                const subtotal =
-                    item.quantity *
-                    item.costPrice;
+                const qty =
+                    Number(
+                        item.quantity || 0
+                    );
+
+                const costPrice =
+                    Number(
+                        item.costPrice || 0
+                    );
+
+                if (
+                    !Number.isFinite(qty) ||
+                    qty <= 0
+                ) {
+                    throw new Error(
+                        "Invalid quantity"
+                    );
+                }
+
+                if (
+                    !Number.isFinite(
+                        costPrice
+                    ) ||
+                    costPrice < 0
+                ) {
+                    throw new Error(
+                        "Invalid cost price"
+                    );
+                }
+
+                const product =
+                    await tx.product.findFirst({
+                        where: {
+                            id: item.productId,
+                            tenantId,
+                        },
+                    });
+
+                if (!product) {
+                    throw new Error(
+                        `Product ${item.productId} not found`
+                    );
+                }
+
+                const currentStock =
+                    product.stock;
+
+                const newStock =
+                    currentStock + qty;
+
+                const itemSubtotal =
+                    qty * costPrice;
+
+                subtotal += itemSubtotal;
+
+                /* ====================== */
+                /* PURCHASE ITEM */
+                /* ====================== */
 
                 await tx.purchaseItem.create({
-
                     data: {
-
                         purchaseId:
                             purchase.id,
-
                         productId:
                             item.productId,
-
-                        quantity:
-                            item.quantity,
-
-                        costPrice:
-                            item.costPrice,
-
-                        subtotal,
-
+                        quantity: qty,
+                        costPrice,
+                        subtotal:
+                            itemSubtotal,
                     },
-
                 });
 
-                await tx.product.update({
+                /* ====================== */
+                /* UPDATE PRODUCT STOCK */
+                /* ====================== */
 
+                await tx.product.update({
                     where: {
                         id: item.productId,
                     },
-
                     data: {
                         stock: {
-                            increment:
-                                item.quantity,
+                            increment: qty,
                         },
                     },
-
                 });
 
+                /* ====================== */
+                /* STOCK MOVEMENT */
+                /* ====================== */
+
                 await tx.stockMovement.create({
-
                     data: {
-
                         tenantId,
-
                         productId:
                             item.productId,
+                        userId,
 
                         type: "IN",
 
-                        quantity:
-                            item.quantity,
+                        quantity: qty,
+
+                        beforeStock:
+                            currentStock,
+
+                        afterStock:
+                            newStock,
 
                         note:
-                            `Purchase ${payload.invoiceNumber}`,
-
+                            `Purchase ${invoiceNumber}`,
                     },
-
                 });
-
             }
 
-            return purchase;
+            /* ====================== */
+            /* FINAL CALCULATION */
+            /* ====================== */
 
+            const discountAmount =
+                subtotal *
+                (discount / 100);
+
+            const taxableAmount =
+                subtotal -
+                discountAmount;
+
+            const taxAmount =
+                taxableAmount *
+                (tax / 100);
+
+            const totalAmount =
+                taxableAmount +
+                taxAmount;
+
+            /* ====================== */
+            /* UPDATE PURCHASE */
+            /* ====================== */
+
+            const updatedPurchase =
+                await tx.purchase.update({
+                    where: {
+                        id: purchase.id,
+                    },
+                    data: {
+                        subtotal,
+
+                        discount,
+                        discountAmount,
+
+                        tax,
+                        taxAmount,
+
+                        totalAmount,
+                    },
+                });
+
+            /* ====================== */
+            /* AUDIT LOG */
+            /* ====================== */
+
+            await createAuditLog({
+                tx,
+                tenantId,
+                userId,
+
+                action: "CREATE",
+
+                entity: "PURCHASE",
+
+                entityId:
+                    purchase.id,
+
+                data: {
+                    invoiceNumber,
+
+                    subtotal,
+
+                    discount,
+                    discountAmount,
+
+                    tax,
+                    taxAmount,
+
+                    totalAmount,
+                },
+            });
+
+            return updatedPurchase;
         }
     );
-
 };
 
-exports.findAll = async (
-    tenantId
-) => {
+exports.findAll = async (tenantId, query) => {
 
-    return prisma.purchase.findMany({
+    const page = Number(query.page) || 1;
+    const limit = Number(query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const search = query.search || "";
 
+    const where = {
+        tenantId,
+        ...(search && {
+            invoiceNumber: {
+                contains: search,
+            },
+        }),
+    };
+
+    try {
+
+        const [purchases, total] = await Promise.all([
+
+            prisma.purchase.findMany({
+                where,
+                skip,
+                take: limit,
+
+                include: {
+                    supplier: true,
+
+                    items: {
+                        include: {
+                            product: true,
+                        },
+                    },
+                },
+
+                orderBy: {
+                    id: "desc",
+                },
+            }),
+
+            prisma.purchase.count({
+                where,
+            }),
+
+        ]);
+
+        return {
+            data: purchases,
+            meta: {
+                page,
+                limit,
+                total,
+                totalPages: Math.ceil(total / limit),
+            },
+        };
+
+    } catch (err) {
+        console.error("🔥 FIND ALL PURCHASE ERROR:", err);
+        throw err;
+    }
+};
+
+exports.findById = async (id, tenantId) => {
+
+    const purchase = await prisma.purchase.findFirst({
         where: {
+            id: Number(id),
             tenantId,
         },
 
         include: {
             supplier: true,
-
             items: {
                 include: {
                     product: true,
                 },
             },
         },
-
-        orderBy: {
-            id: "desc",
-        },
-
     });
 
-};
-
-exports.findById = async (
-    id,
-    tenantId
-) => {
-
-    const purchase =
-        await prisma.purchase.findFirst({
-
-            where: {
-                id: Number(id),
-                tenantId,
-            },
-
-            include: {
-
-                supplier: true,
-
-                items: {
-                    include: {
-                        product: true,
-                    },
-                },
-
-            },
-
-        });
-
     if (!purchase) {
-
-        throw new Error(
-            "Purchase not found"
-        );
-
+        throw new Error("Purchase not found");
     }
 
     return purchase;
-
 };
+

@@ -34,3 +34,92 @@ exports.summary = async (
     }
 
 };
+
+exports.recentStockMovements =
+    async (req, res, next) => {
+
+        try {
+
+            const tenantId =
+                req.user.tenantId;
+
+            const data =
+                await service
+                    .recentStockMovements(
+                        tenantId
+                    );
+
+            res.json({
+                success: true,
+                data,
+            });
+
+        } catch (err) {
+
+            next(err);
+
+        }
+
+    };
+
+exports.salesChart =
+    async (req, res, next) => {
+
+        try {
+
+            const tenantId =
+                req.user.tenantId;
+
+            const days =
+                req.query.days || 7;
+
+            const data =
+                await service.salesChart(
+                    tenantId,
+                    days
+                );
+
+            res.json({
+                success: true,
+                data,
+            });
+
+        } catch (err) {
+
+            next(err);
+
+        }
+
+    };
+
+exports.topSellingProducts = async (req, res, next) => {
+
+    try {
+
+        const tenantId =
+            req.user.tenantId;
+
+        const period =
+            req.query.period || "30d";
+
+        const data =
+            await service.topSellingProducts(
+                tenantId,
+                period
+            );
+
+        res.json({
+
+            success: true,
+
+            data,
+
+        });
+
+    } catch (err) {
+
+        next(err);
+
+    }
+
+};
