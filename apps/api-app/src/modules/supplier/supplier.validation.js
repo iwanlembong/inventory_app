@@ -1,6 +1,6 @@
 const { z } = require("zod");
 
-exports.createSupplierSchema = z.object({
+const supplierSchema = z.object({
 
   name: z
     .string()
@@ -27,3 +27,9 @@ exports.createSupplierSchema = z.object({
     .or(z.literal("")),
 
 });
+
+exports.createSupplierSchema =
+    supplierSchema;
+
+exports.updateSupplierSchema =
+    supplierSchema;

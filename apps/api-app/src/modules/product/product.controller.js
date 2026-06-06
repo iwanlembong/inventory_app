@@ -83,30 +83,43 @@ exports.create = async (req, res) => {
 
 };
 
-exports.findAll = async (req, res) => {
+exports.findAll = async (
+
+    req,
+    res,
+    next
+
+) => {
 
     try {
 
         const result =
             await service.findAll(
-                req.user.tenantId
+
+                req.user.tenantId,
+
+                req.query
+
             );
 
         res.json({
+
             success: true,
-            data: result,
+
+            data: result.data,
+
+            meta: result.meta,
+
         });
 
     } catch (err) {
 
-        res.status(500).json({
-            success: false,
-            message: err.message,
-        });
+        next(err);
 
     }
 
 };
+
 
 exports.findById = async (req, res) => {
 

@@ -3,9 +3,9 @@ POST http://localhost:4000/api/v1/auth/register
 Content-Type: application/json
 
 {
-  "storeName": "Toko Maju2",
-  "storeSlug": "toko-maju2",
-  "email": "owner2@test.com",
+  "storeName": "Toko Mandiri Jaya",
+  "storeSlug": "toko-mandiri-jaya",
+  "email": "owner@test.com",
   "password": "123456"
 }
 
@@ -49,6 +49,32 @@ Content-Type: application/json
   "email": "owner@test.com",
   "password": "123456"
 }
+
+###
+POST http://localhost:4000/api/v1/users
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA0NjY3MzMsImV4cCI6MTc4MDQ2NzAzM30.FO27Vpv1J1ODFqGaHKB4U9kKkk6cUD_MKMa68Hcv7Ek
+Content-Type: application/json
+
+{
+    "email": "admin@test.com",
+    "password": "123456",
+    "role": "ADMIN"
+}
+
+###
+GET http://localhost:4000/api/v1/users?page=1&limit=10
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA0Njc3NjAsImV4cCI6MTc4MDQ2ODA2MH0.MWMQ__G5NjgqCvkllxibzZW9tsDHHFl2JpcPMqp0UlE
+
+###
+PUT http://localhost:4000/api/v1/users/3
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA0Njc3NjAsImV4cCI6MTc4MDQ2ODA2MH0.MWMQ__G5NjgqCvkllxibzZW9tsDHHFl2JpcPMqp0UlE
+Content-Type: application/json
+
+{
+    "email": "admin2@test.com",
+    "role": "CASHIER"
+}
+
 
 ###
 GET http://localhost:4000/api/v1/auth/me
@@ -117,34 +143,34 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlb
 
 ###
 POST http://localhost:4000/api/v1/suppliers
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA1NDE0MzEsImV4cCI6MTc4MDU0MTczMX0.E2Cp03zQIcSBsWNM5mVEzo2a-rpxy1AQ06rPG6cgAm8
 Content-Type: application/json
 
 {
-  "name": "PT Maju Mundur",
-  "phone": "08215266622",
-  "email": "majumundur@test.com",
-  "address": "Bali"
+  "name": "PT Cahaya Mandiri",
+  "phone": "0821345678",
+  "email": "cahayamandiri@test.com",
+  "address": "Jakarta"
 }
 
 ###
 GET http://localhost:4000/api/v1/suppliers
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA1NDE0MzEsImV4cCI6MTc4MDU0MTczMX0.E2Cp03zQIcSBsWNM5mVEzo2a-rpxy1AQ06rPG6cgAm8
 
 ###
-GET http://localhost:4000/api/v1/suppliers/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+GET http://localhost:4000/api/v1/suppliers/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA1NDE0MzEsImV4cCI6MTc4MDU0MTczMX0.E2Cp03zQIcSBsWNM5mVEzo2a-rpxy1AQ06rPG6cgAm8
 
 ###
-PUT http://localhost:4000/api/v1/suppliers/1
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+PUT http://localhost:4000/api/v1/suppliers/2
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODA1NDE0MzEsImV4cCI6MTc4MDU0MTczMX0.E2Cp03zQIcSBsWNM5mVEzo2a-rpxy1AQ06rPG6cgAm8
 Content-Type: application/json
 
 {
-  "name": "PT Supplier Baru",
-  "phone": "089999999",
-  "email": "baru@test.com",
-  "address": "Bandung"
+  "name": "PT Maju Mundur",
+  "phone": "082166722222",
+  "email": "majumundur@test.com",
+  "address": "Bali"
 }
 
 ###
@@ -186,7 +212,7 @@ Content-Type: application/json
 
 ###
 GET http://localhost:4000/api/v1/dashboard/summary
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODAzNjI1NDYsImV4cCI6MTc4MDM2Mjg0Nn0.KWw09_XqmbtnVWcY42eaov0j2UyDjRRkd-ocHfyXG8o
 
 ###
 GET http://localhost:4000/api/v1/audit-logs
@@ -195,3 +221,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlb
 ###
 POST http://localhost:4000/api/v1/auth/refresh-token
 Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3Nzk2NzQ3NzcsImV4cCI6MTc4MDI3OTU3N30.lnAK5OdLMn8O7yYUbtw5lAMrPvbw8AAvzwbFmIQtoY4
+
+###
+GET http://localhost:4000/api/v1/dashboard/sales-chart?days=30
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInRlbmFudElkIjoxLCJyb2xlIjoiT1dORVIiLCJpYXQiOjE3ODAzNjY2NjYsImV4cCI6MTc4MDM2Njk2Nn0.ID-r_Ow9XCIuwjiKs77LGSeZhh9w6V2OqP9SUI01PO8
+

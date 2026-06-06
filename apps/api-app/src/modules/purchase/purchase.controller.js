@@ -5,6 +5,10 @@ const {
     createPurchaseSchema,
 } = require("./purchase.validation");
 
+const {
+    generatePurchasePdf,
+} = require("./purchase.pdf");
+
 exports.create = async (
     req,
     res
@@ -20,7 +24,8 @@ exports.create = async (
         const result =
             await service.create(
                 validated,
-                req.user.tenantId
+                req.user.tenantId,
+                req.user.userId
             );
 
         res.status(201).json({
@@ -54,7 +59,8 @@ exports.findAll = async (
 
         const result =
             await service.findAll(
-                req.user.tenantId
+                req.user.tenantId,
+                req.query
             );
 
         res.json({
@@ -113,3 +119,48 @@ exports.findById = async (
     }
 
 };
+
+exports.downloadPdf =
+    async (
+        req,
+        res,
+        next
+    ) => {
+
+        try {
+
+            const purchase =
+                await service.findById(
+
+                    req.params.id,
+
+                    req.user.tenantId
+
+                );
+
+            if (!purchase) {
+
+                return res.status(404)
+                    .json({
+
+                        success: false,
+
+                        message:
+                            "Purchase not found",
+
+                    });
+
+            }
+
+            generatePurchasePdf(
+                purchase,
+                res
+            );
+
+        } catch (err) {
+
+            next(err);
+
+        }
+
+    };

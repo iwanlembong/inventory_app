@@ -3,6 +3,7 @@ const service =
 
 const {
   createSupplierSchema,
+  updateSupplierSchema,
 } = require("./supplier.validation");
 
 exports.create = async (
@@ -20,7 +21,8 @@ exports.create = async (
     const result =
       await service.create(
         validated,
-        req.user.tenantId
+        req.user.tenantId,
+        req.user.userId
       );
 
     res.status(201).json({
@@ -48,12 +50,16 @@ exports.findAll = async (
 
     const result =
       await service.findAll(
-        req.user.tenantId
+        req.user.tenantId,
+        req.query
       );
 
     res.json({
       success: true,
-      data: result,
+
+      data: result.data,
+
+      meta: result.meta,
     });
 
   } catch (err) {
@@ -104,7 +110,7 @@ exports.update = async (
   try {
 
     const validated =
-      createSupplierSchema.parse(
+      updateSupplierSchema.parse(
         req.body
       );
 
@@ -112,7 +118,8 @@ exports.update = async (
       await service.update(
         req.params.id,
         validated,
-        req.user.tenantId
+        req.user.tenantId,
+        req.user.userId
       );
 
     res.json({
@@ -140,7 +147,8 @@ exports.remove = async (
 
     await service.remove(
       req.params.id,
-      req.user.tenantId
+      req.user.tenantId,
+      req.user.userId
     );
 
     res.json({

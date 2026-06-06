@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const { prisma } = require("@inventory/database");
 
 const authRoutes = require("./modules/auth/auth.route");
+const userRoutes = require("./modules/user/user.route");
 const categoryRoutes = require("./modules/category/category.route");
 const productRoutes = require("./modules/product/product.route");
 const stockRoutes = require("./modules/stock/stock.route");
@@ -56,6 +57,7 @@ app.get("/users", async (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/stocks", stockRoutes);

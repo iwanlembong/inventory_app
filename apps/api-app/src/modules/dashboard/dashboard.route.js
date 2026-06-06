@@ -27,4 +27,23 @@ router.get(
   controller.summary
 );
 
+router.get(
+    "/recent-stock-movements",
+    authMiddleware,
+    controller.recentStockMovements
+);
+
+router.get(
+    "/sales-chart",
+    authMiddleware,
+    controller.salesChart
+);
+
+router.get(
+    "/top-products",
+    authMiddleware,
+    controller.topSellingProducts
+);
+
+
 module.exports = router;

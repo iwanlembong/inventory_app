@@ -1,107 +1,106 @@
 const service = require("./stock.service");
+const { stockSchema } = require("./stock.validation");
 
-const {
-  stockSchema,
-} = require("./stock.validation");
+/* ===================================================== */
+/* CREATE STOCK MOVEMENT                                 */
+/* ===================================================== */
+exports.create = async (req, res) => {
+    try {
+        const validated = stockSchema.parse(req.body);
 
+        const result = await service.create(
+            validated,
+            req.user.tenantId,
+            req.user.userId
+        );
 
-exports.create = async (
-  req,
-  res
-) => {
+        return res.status(201).json({
+            success: true,
+            message: "Stock movement created successfully",
+            data: result,
+        });
 
-  try {
+    } catch (err) {
+        return handleError(err, res);
+    }
+};
 
-    const validated =
-      stockSchema.parse(req.body);
+/* ===================================================== */
+/* GET ALL STOCK MOVEMENTS                               */
+/* ===================================================== */
+exports.findAll = async (req, res) => {
+    try {
+        const result = await service.findAll(
+            req.user.tenantId,
+            {
+                page: Number(req.query.page) || 1,
+                limit: Number(req.query.limit) || 10,
+                search: req.query.search || "",
+                type: req.query.type || "",
+                sourceType: req.query.sourceType || "",
+                productId: req.query.productId || null,
+            }
+        );
 
-    const result =
-      await service.create(
-        validated,
-        req.user.tenantId,
-        req.user.userId
-      );
+        return res.json({
+            success: true,
+            message: "Stock movements retrieved successfully",
+            data: result,
+        });
 
-    res.status(201).json({
-      success: true,
-      data: result,
-    });
+    } catch (err) {
+        return res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+    }
+};
 
-  } catch (err) {
+/* ===================================================== */
+/* GET STOCK HISTORY BY PRODUCT                          */
+/* ===================================================== */
+exports.getByProductId = async (req, res) => {
+    try {
+        const tenantId = req.user.tenantId;
+        const productId = Number(req.params.productId);
+
+        if (!productId || isNaN(productId)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid productId",
+            });
+        }
+
+        const data = await service.findByProductId(
+            tenantId,
+            productId
+        );
+
+        return res.json({
+            success: true,
+            message: "Stock history retrieved successfully",
+            data,
+        });
+
+    } catch (err) {
+        return handleError(err, res);
+    }
+};
+
+/* ===================================================== */
+/* CENTRAL ERROR HANDLER                                 */
+/* ===================================================== */
+function handleError(err, res) {
     const errorMap = {
-      "Product not found": 404,
-      "Insufficient stock": 400,
+        "Product not found": 404,
+        "Insufficient stock": 400,
+        "Invalid stock movement type": 400,
     };
 
-    const status =
-      errorMap[err.message] || 500;
-    res.status(status).json({
-      success: false,
-      message: err.message,
+    const status = errorMap[err.message] || 500;
+
+    return res.status(status).json({
+        success: false,
+        message: err.message || "Internal Server Error",
     });
-
-  }
-
-};
-
-exports.findAll = async (
-  req,
-  res
-) => {
-
-  try {
-
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 10;
-    const search = req.query.search || "";
-    const type = req.query.type || "";
-
-    const result =
-      await service.findAll(
-        req.user.tenantId,
-        {
-          page,
-          limit,
-          search,
-          type,
-        }
-      );
-
-    res.json({
-      success: true,
-      data: result,
-    });
-
-  } catch (err) {
-
-    res.status(500).json({
-      success: false,
-      message: err.message,
-    });
-
-  }
-
-};
-
-exports.getByProductId = async (req, res, next) => {
-  try {
-    console.log("REQ PARAM:", req.params);
-    console.log("USER:", req.user);
-
-    const tenantId = req.user.tenantId;
-    const productId = Number(req.params.productId);
-
-    const data = await service.findByProductId(
-      tenantId,
-      productId
-    );
-
-    res.json({
-      success: true,
-      data,
-    });
-  } catch (err) {
-     console.error("STOCK HISTORY ERROR:", err);
-    next(err);
-  }
-};
+}

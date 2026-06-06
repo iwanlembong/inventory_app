@@ -76,22 +76,112 @@ exports.create = async (
 
 };
 
-exports.findAll = async (tenantId) => {
+exports.findAll = async (
 
-    return prisma.product.findMany({
-        where: {
-            tenantId,
+    tenantId,
+    query
+
+) => {
+
+    const page =
+        Number(query.page) || 1;
+
+    const limit =
+        Number(query.limit) || 10;
+
+    const skip =
+        (page - 1) * limit;
+
+    const search =
+        query.search || "";
+
+    const categoryId =
+        query.categoryId || "";
+
+    /* ====================== */
+    /* WHERE */
+    /* ====================== */
+
+    const where = {
+
+        tenantId,
+
+        ...(categoryId && {
+            categoryId:
+                Number(categoryId),
+        }),
+
+        ...(search && {
+
+            name: {
+
+                contains: search,
+
+            },
+
+        }),
+
+    };
+
+    /* ====================== */
+    /* QUERY */
+    /* ====================== */
+
+    const [
+
+        products,
+        total,
+
+    ] = await Promise.all([
+
+        prisma.product.findMany({
+
+            where,
+
+            skip,
+
+            take: limit,
+
+            include: {
+
+                category: true,
+
+                images: true,
+
+            },
+
+            orderBy: {
+                createdAt: "desc",
+            },
+
+        }),
+
+        prisma.product.count({
+            where,
+        }),
+
+    ]);
+
+    return {
+
+        data: products,
+
+        meta: {
+
+            page,
+
+            limit,
+
+            total,
+
+            totalPages:
+                Math.ceil(
+                    total / limit
+                ),
+
         },
 
-        include: {
-            category: true,
-            images: true,
-        },
-
-        orderBy: {
-            id: "desc",
-        },
-    });
+    };
 
 };
 

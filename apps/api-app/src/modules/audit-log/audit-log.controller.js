@@ -1,23 +1,33 @@
 const service =
     require("./audit-log.service");
 
+
 exports.findAll = async (
+
     req,
-    res
+    res,
+    next
+
 ) => {
 
     try {
 
         const result =
             await service.findAll(
-                req.user.tenantId
+
+                req.user.tenantId,
+
+                req.query
+
             );
 
         res.json({
 
             success: true,
 
-            data: result,
+            data: result.data,
+
+            meta: result.meta,
 
         });
 
@@ -64,6 +74,34 @@ exports.findById = async (
 
             message: err.message,
 
+        });
+
+    }
+
+};
+
+exports.findLatest = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const result =
+            await service.findLatest(
+                req.user.tenantId
+            );
+
+        res.json({
+            success: true,
+            data: result,
+        });
+
+    } catch (err) {
+
+        res.status(400).json({
+            success: false,
+            message: err.message,
         });
 
     }

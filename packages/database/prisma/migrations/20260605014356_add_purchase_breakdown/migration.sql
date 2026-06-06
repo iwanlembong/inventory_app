@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE `purchase` ADD COLUMN `discountAmount` DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    ADD COLUMN `taxAmount` DECIMAL(12, 2) NOT NULL DEFAULT 0,
+    MODIFY `subtotal` DECIMAL(12, 2) NOT NULL DEFAULT 0;

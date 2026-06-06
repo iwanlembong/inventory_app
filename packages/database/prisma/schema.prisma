@@ -50,6 +50,8 @@ model User {
 
   stockMovements StockMovement[]
 
+  sales Sale[]
+
   createdAt DateTime @default(now())
 }
 
@@ -127,6 +129,12 @@ enum StockMovementType {
   ADJUSTMENT
 }
 
+enum StockSourceType {
+  PURCHASE
+  SALE
+  ADJUSTMENT
+}
+
 model StockMovement {
   id Int @id @default(autoincrement())
 
@@ -144,6 +152,10 @@ model StockMovement {
 
   afterStock Int?
 
+  sourceType StockSourceType
+
+  sourceId Int?
+
   note String?
 
   createdAt DateTime @default(now())
@@ -153,6 +165,9 @@ model StockMovement {
   product Product @relation(fields: [productId], references: [id])
 
   user User @relation(fields: [userId], references: [id])
+
+  @@index([tenantId, productId])
+  @@index([sourceType, sourceId])
 }
 
 model Supplier {
@@ -183,12 +198,22 @@ enum PurchaseStatus {
 model Purchase {
   id Int @id @default(autoincrement())
 
-  tenantId   Int
+  tenantId Int
   supplierId Int
 
   invoiceNumber String
 
-  totalAmount Decimal @db.Decimal(12, 2)
+  subtotal Decimal @default(0) @db.Decimal(12,2)
+
+  discount Decimal @default(0) @db.Decimal(5,2)
+
+  discountAmount Decimal @default(0) @db.Decimal(12,2)
+
+  tax Decimal @default(0) @db.Decimal(5,2)
+
+  taxAmount Decimal @default(0) @db.Decimal(12,2)
+
+  totalAmount Decimal @db.Decimal(12,2)
 
   status PurchaseStatus @default(COMPLETED)
 
@@ -224,10 +249,17 @@ enum SalesStatus {
   CANCELLED
 }
 
+enum SaleStatus {
+  PAID
+  VOIDED
+}
+
 model Sale {
   id Int @id @default(autoincrement())
 
   tenantId Int
+
+  userId Int
 
   invoiceNumber String
 
@@ -236,6 +268,8 @@ model Sale {
   status SalesStatus @default(PAID)
 
   tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  user User @relation(fields: [userId], references: [id])
 
   items SaleItem[]
 
@@ -276,4 +310,16 @@ model AuditLog {
   data Json?
 
   createdAt DateTime @default(now())
+}
+
+model InvoiceSequence {
+  id        Int      @id @default(autoincrement())
+  tenantId  Int
+  prefix    String   // PUR
+  dateKey   String   // 20260604
+  sequence  Int      // 1,2,3...
+  createdAt DateTime @default(now())
+
+  @@unique([tenantId, prefix, dateKey, sequence])
+  @@map("invoicesequence")
 }
