@@ -1,5 +1,8 @@
 const service = require("./sale.service");
 const { createSaleSchema } = require("./sale.validation");
+const {
+    generateSalePdf,
+} = require("./sale.pdf");
 
 /* ===================================================== */
 /* CREATE SALE                                           */
@@ -159,6 +162,48 @@ exports.getNextInvoiceNumber = async (
 
     }
 };
+
+/* ===================================================== */
+/* DOWNLOAD PDF                                 */
+/* ===================================================== */
+exports.downloadPdf =
+    async (
+        req,
+        res
+    ) => {
+
+        try {
+
+            const sale =
+                await service.findById(
+
+                    req.params.id,
+
+                    req.user.tenantId
+
+                );
+
+            return generateSalePdf(
+                sale,
+                res
+            );
+
+        } catch (err) {
+
+            console.error(err);
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    err.message,
+
+            });
+
+        }
+
+    };
 
 /* ===================================================== */
 /* CENTRAL ERROR HANDLER                                 */

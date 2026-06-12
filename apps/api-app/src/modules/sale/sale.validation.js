@@ -7,6 +7,11 @@ exports.createSaleSchema =
             .string()
             .min(2),
 
+        customerId: z
+            .number()
+            .optional()
+            .nullable(),
+
         items: z.array(
 
             z.object({

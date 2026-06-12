@@ -123,3 +123,23 @@ exports.topSellingProducts = async (req, res, next) => {
     }
 
 };
+
+exports.getRevenueExpenseChart =
+    async (req, res) => {
+
+        const tenantId =
+            req.user.tenantId;
+
+        const days =
+            req.query.days || 30;
+
+        const data =
+            await service
+                .revenueExpenseChart(
+                    tenantId,
+                    days
+                );
+
+        res.json(data);
+
+    };

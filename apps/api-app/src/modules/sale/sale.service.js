@@ -17,6 +17,7 @@ exports.create = async (payload, tenantId, userId) => {
             data: {
                 tenantId,
                 invoiceNumber: payload.invoiceNumber,
+                customerId: payload.customerId || null,
                 userId,
                 totalAmount: 0, // update later
                 status: "PAID",
@@ -59,6 +60,7 @@ exports.create = async (payload, tenantId, userId) => {
                     saleId: sale.id,
                     productId: item.productId,
                     quantity: item.quantity,
+                    costPrice: item.costPrice,
                     sellingPrice: item.sellingPrice,
                     subtotal,
                 },
@@ -172,6 +174,12 @@ exports.findAll = async (
                 where,
 
                 include: {
+                    customer: {
+                        select: {
+                            id: true,
+                            name: true,
+                        },
+                    },
 
                     items: {
 
@@ -238,6 +246,8 @@ exports.findById = async (id, tenantId) => {
             tenantId,
         },
         include: {
+            customer: true,
+
             items: {
                 include: {
                     product: true,
@@ -265,6 +275,7 @@ exports.cancelSale = async (saleId, tenantId, userId) => {
                 tenantId,
             },
             include: {
+                customer: true,
                 items: true,
             },
         });
@@ -335,7 +346,7 @@ exports.cancelSale = async (saleId, tenantId, userId) => {
                     beforeStock,
                     afterStock,
 
-                    sourceType: "SALE_CANCEL",
+                    sourceType: "SALE",
                     sourceId: sale.id,
 
                     note: `CANCEL SALE ${sale.invoiceNumber}`,
@@ -350,7 +361,7 @@ exports.cancelSale = async (saleId, tenantId, userId) => {
             tx,
             tenantId,
             userId,
-            action: "CANCEL_SALE",
+            action: AUDIT_ACTIONS.CANCEL_SALE,
             entity: "SALE",
             entityId: sale.id,
             data: {

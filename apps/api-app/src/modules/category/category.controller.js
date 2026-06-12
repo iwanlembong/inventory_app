@@ -14,7 +14,8 @@ exports.create = async (req, res) => {
 
     const result = await service.create(
       validated,
-      req.user.tenantId
+      req.user.tenantId,
+      req.user.userId
     );
 
     res.status(201).json({
@@ -106,7 +107,8 @@ exports.update = async (req, res) => {
     const result = await service.update(
       req.params.id,
       validated,
-      req.user.tenantId
+      req.user.tenantId,
+      req.user.userId
     );
 
     res.json({
@@ -132,7 +134,8 @@ exports.remove = async (req, res) => {
 
     await service.remove(
       req.params.id,
-      req.user.tenantId
+      req.user.tenantId,
+      req.user.userId
     );
 
     res.json({

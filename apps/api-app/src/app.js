@@ -15,6 +15,11 @@ const purchaseRoutes = require("./modules/purchase/purchase.route");
 const saleRoutes = require("./modules/sale/sale.route");
 const dashboardRoutes = require("./modules/dashboard/dashboard.route");
 const auditLogRoutes = require("./modules/audit-log/audit-log.route");
+const saleReturnRoutes = require("./modules/sale-return/sale-return.route");
+const purchaseReturnRoutes = require("./modules/purchase-return/purchase-return.route");
+const reportRoutes = require("./modules/report/report.route");
+const expenseRoutes = require("./modules/expense/expense.route");
+const customerRoutes = require("./modules/customer/customer.route");
 
 
 const app = express();
@@ -66,5 +71,10 @@ app.use("/api/v1/purchases", purchaseRoutes);
 app.use("/api/v1/sales", saleRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
 app.use("/api/v1/audit-logs", auditLogRoutes);
+app.use("/api/v1/sale-returns", saleReturnRoutes);
+app.use("/api/v1/purchase-returns", purchaseReturnRoutes);
+app.use("/api/v1/reports", reportRoutes);
+app.use("/api/v1/expenses", expenseRoutes);
+app.use("/api/v1/customers", customerRoutes);
 
 module.exports = app;

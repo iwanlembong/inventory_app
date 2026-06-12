@@ -185,6 +185,40 @@ exports.findAll = async (
 
 };
 
+exports.getDropdown = async (
+    tenantId
+) => {
+
+    return prisma.product.findMany({
+
+        where: {
+            tenantId,
+        },
+
+        select: {
+
+            id: true,
+
+            name: true,
+
+            sku: true,
+
+            stock: true,
+
+            costPrice: true,
+
+            sellingPrice: true,
+
+        },
+
+        orderBy: {
+            name: "asc",
+        },
+
+    });
+
+};
+
 exports.findById = async (
     id,
     tenantId

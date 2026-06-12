@@ -1,118 +1,160 @@
 const { prisma } = require("@inventory/database");
 
-exports.create = async (payload, tenantId) => {
+const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
 
-  const existing = await prisma.category.findFirst({
-    where: {
-      tenantId,
-      slug: payload.slug,
-    },
-  });
+const {
+  createAuditLog,
+} = require("../../utils/audit");
 
-  if (existing) {
-    throw new Error("Category slug already exists");
+exports.create = async (
+  payload,
+  tenantId,
+  userId
+) => {
+
+  const existingCategory =
+    await prisma.category.findFirst({
+      where: {
+        tenantId,
+        name: payload.name,
+      },
+    });
+
+  if (existingCategory) {
+    throw new Error(
+      "Category already exists"
+    );
   }
 
-  return prisma.category.create({
+  const category =
+    await prisma.category.create({
+
+      data: {
+
+        tenantId,
+
+        name: payload.name,
+
+        slug: payload.slug,
+
+      },
+
+    });
+
+
+  await createAuditLog({
+
+    tenantId,
+
+    userId,
+
+    action: AUDIT_ACTIONS.CREATE_CATEGORY,
+
+    entity: "CATEGORY",
+
+    entityId: category.id,
+
     data: {
-      tenantId,
-      name: payload.name,
-      slug: payload.slug,
+      name: category.name,
+      slug: category.slug,
     },
+
   });
+
+  return category;
 
 };
 
 exports.findAll = async (
 
-    tenantId,
-    query
+  tenantId,
+  query
 
 ) => {
 
-    const page =
-        Number(query.page) || 1;
+  const page =
+    Number(query.page) || 1;
 
-    const limit =
-        Number(query.limit) || 10;
+  const limit =
+    Number(query.limit) || 10;
 
-    const skip =
-        (page - 1) * limit;
+  const skip =
+    (page - 1) * limit;
 
-    const search =
-        query.search || "";
+  const search =
+    query.search || "";
 
-    /* ====================== */
-    /* WHERE */
-    /* ====================== */
+  /* ====================== */
+  /* WHERE */
+  /* ====================== */
 
-    const where = {
+  const where = {
 
-        tenantId,
+    tenantId,
 
-        ...(search && {
+    ...(search && {
 
-            name: {
+      name: {
 
-                contains: search,
+        contains: search,
 
-            },
+      },
 
-        }),
+    }),
 
-    };
+  };
 
-    /* ====================== */
-    /* QUERY */
-    /* ====================== */
+  /* ====================== */
+  /* QUERY */
+  /* ====================== */
 
-    const [
+  const [
 
-        categories,
-        total,
+    categories,
+    total,
 
-    ] = await Promise.all([
+  ] = await Promise.all([
 
-        prisma.category.findMany({
+    prisma.category.findMany({
 
-            where,
+      where,
 
-            skip,
+      skip,
 
-            take: limit,
+      take: limit,
 
-            orderBy: {
-                createdAt: "desc",
-            },
+      orderBy: {
+        createdAt: "desc",
+      },
 
-        }),
+    }),
 
-        prisma.category.count({
-            where,
-        }),
+    prisma.category.count({
+      where,
+    }),
 
-    ]);
+  ]);
 
-    return {
+  return {
 
-        data: categories,
+    data: categories,
 
-        meta: {
+    meta: {
 
-            page,
+      page,
 
-            limit,
+      limit,
 
-            total,
+      total,
 
-            totalPages:
-                Math.ceil(
-                    total / limit
-                ),
+      totalPages:
+        Math.ceil(
+          total / limit
+        ),
 
-        },
+    },
 
-    };
+  };
 
 };
 
@@ -136,34 +178,92 @@ exports.findById = async (id, tenantId) => {
 exports.update = async (
   id,
   payload,
-  tenantId
+  tenantId,
+  userId
 ) => {
 
-  await exports.findById(id, tenantId);
+  await exports.findById(
+    id,
+    tenantId
+  );
 
-  return prisma.category.update({
-    where: {
-      id: Number(id),
-    },
+  const category =
+    await prisma.category.update({
+
+      where: {
+        id: Number(id),
+      },
+
+      data: {
+
+        name: payload.name,
+
+        slug: payload.slug,
+
+      },
+
+    });
+
+  await createAuditLog({
+
+    tenantId,
+
+    userId,
+
+    action: AUDIT_ACTIONS.UPDATE_CATEGORY,
+
+    entity: "CATEGORY",
+
+    entityId: category.id,
+
     data: {
-      name: payload.name,
-      slug: payload.slug,
+      name: category.name,
+      slug: category.slug,
     },
-  });
 
+  });
+  return category;
 };
 
 exports.remove = async (
   id,
-  tenantId
+  tenantId,
+  userId
 ) => {
 
-  await exports.findById(id, tenantId);
+  const category =
+    await exports.findById(
+      id,
+      tenantId
+    );
 
-  return prisma.category.delete({
+  await prisma.category.delete({
+
     where: {
       id: Number(id),
     },
+
   });
+
+  await createAuditLog({
+
+    tenantId,
+
+    userId,
+
+    action: AUDIT_ACTIONS.DELETE_CATEGORY,
+
+    entity: "CATEGORY",
+
+    entityId: category.id,
+
+    data: {
+      name: category.name,
+      slug: category.slug,
+    },
+
+  });
+
+  return true;
 
 };

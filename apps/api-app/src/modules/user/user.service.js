@@ -3,6 +3,8 @@ const bcrypt = require("bcryptjs")
 const { prisma } =
     require("@inventory/database");
 
+const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
+
 const {
     createAuditLog,
 } = require("../../utils/audit");
@@ -49,7 +51,7 @@ exports.create = async (
     await createAuditLog({
         tenantId,
         userId,
-        action: "CREATE",
+        action: AUDIT_ACTIONS.CREATE_USER,
         entity: "USER",
         entityId: user.id,
         data: {
@@ -267,7 +269,7 @@ exports.update = async (
 
         userId,
 
-        action: "UPDATE",
+        action: AUDIT_ACTIONS.UPDATE_USER,
 
         entity: "USER",
 
@@ -351,7 +353,7 @@ exports.remove = async (
 
         userId,
 
-        action: "DELETE",
+        action: AUDIT_ACTIONS.DELETE_USER,
 
         entity: "USER",
 
