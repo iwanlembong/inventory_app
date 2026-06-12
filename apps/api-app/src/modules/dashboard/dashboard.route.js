@@ -45,5 +45,10 @@ router.get(
     controller.topSellingProducts
 );
 
+router.get(
+    "/revenue-expense-chart",
+    authMiddleware,
+    controller.getRevenueExpenseChart
+);
 
 module.exports = router;

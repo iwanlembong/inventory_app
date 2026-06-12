@@ -51,6 +51,16 @@ router.get(
 );
 
 /* ====================== */
+/* GET ALL FOR DROPDOWN   */
+/* ====================== */
+
+router.get(
+    "/dropdown",
+    authMiddleware,
+    controller.getDropdown
+);
+
+/* ====================== */
 /* GET BY ID */
 /* ====================== */
 

@@ -1,4 +1,5 @@
 const { prisma } = require("@inventory/database");
+const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
 const { createAuditLog } = require("../../utils/audit");
 
 /* ====================== */
@@ -300,7 +301,7 @@ exports.create = async (
                 tenantId,
                 userId,
 
-                action: "CREATE",
+                action: AUDIT_ACTIONS.CREATE_PURCHASE,
 
                 entity: "PURCHASE",
 
@@ -412,5 +413,267 @@ exports.findById = async (id, tenantId) => {
     }
 
     return purchase;
+};
+
+
+exports.search = async (
+    keyword,
+    tenantId
+) => {
+
+    return prisma.purchase.findMany({
+
+        where: {
+
+            tenantId,
+
+            OR: [
+
+                {
+                    invoiceNumber: {
+                        contains: keyword,
+                    },
+                },
+
+                {
+                    supplier: {
+                        name: {
+                            contains: keyword,
+                        },
+                    },
+                },
+
+            ],
+
+        },
+
+        include: {
+            supplier: true,
+        },
+
+        orderBy: {
+            createdAt: "desc",
+        },
+
+        take: 10,
+
+    });
+
+};
+
+exports.getDetailForReturn =
+    async (
+        purchaseId,
+        tenantId
+    ) => {
+
+        const purchase =
+            await prisma.purchase.findFirst({
+
+                where: {
+
+                    id: Number(purchaseId),
+
+                    tenantId,
+
+                },
+
+                include: {
+
+                    supplier: true,
+
+                    items: {
+
+                        include: {
+
+                            product: true,
+
+                        },
+
+                    },
+
+                },
+
+            });
+
+        if (!purchase) {
+
+            throw new Error(
+                "Purchase not found"
+            );
+
+        }
+
+        return purchase;
+
+    };
+
+exports.cancel = async (
+    id,
+    tenantId,
+    userId,
+    reason
+) => {
+
+    return prisma.$transaction(
+
+        async (tx) => {
+
+            const purchase =
+                await tx.purchase.findFirst({
+
+                    where: {
+                        id: Number(id),
+                        tenantId,
+                    },
+
+                    include: {
+
+                        items: {
+
+                            include: {
+                                product: true,
+                            },
+
+                        },
+
+                    },
+
+                });
+
+            if (!purchase) {
+
+                throw new Error(
+                    "Purchase not found"
+                );
+
+            }
+
+            if (
+                purchase.status ===
+                "CANCELLED"
+            ) {
+
+                throw new Error(
+                    "Purchase already cancelled"
+                );
+
+            }
+
+            for (
+                const item of purchase.items
+            ) {
+
+                const beforeStock =
+                    item.product.stock;
+
+                const afterStock =
+                    beforeStock -
+                    item.quantity;
+
+                if (afterStock < 0) {
+
+                    throw new Error(
+                        `${item.product.name} stock is not enough`
+                    );
+
+                }
+
+                await tx.product.update({
+
+                    where: {
+                        id: item.productId,
+                    },
+
+                    data: {
+                        stock: afterStock,
+                    },
+
+                });
+
+                await tx.stockMovement.create({
+
+                    data: {
+
+                        tenantId,
+
+                        productId:
+                            item.productId,
+
+                        userId,
+
+                        type: "OUT",
+
+                        quantity:
+                            item.quantity,
+
+                        beforeStock,
+
+                        afterStock,
+
+                        sourceType:
+                            "PURCHASE_CANCEL",
+
+                        sourceId:
+                            purchase.id,
+
+                        note:
+                            `PURCHASE CANCEL ${purchase.invoiceNumber}`,
+
+                    },
+
+                });
+
+            }
+
+            await tx.purchase.update({
+
+                where: {
+                    id: purchase.id,
+                },
+
+                data: {
+                    status:
+                        "CANCELLED",
+                },
+
+            });
+
+            /* ============================== */
+            /* AUDIT LOG                      */
+            /* ============================== */
+
+            await createAuditLog({
+
+                tenantId,
+
+                userId,
+
+                action:
+                    AUDIT_ACTIONS.CANCEL_PURCHASE,
+
+                entity:
+                    "PURCHASE",
+
+                entityId:
+                    purchase.id,
+
+                data: {
+
+                    invoiceNumber:
+                        purchase.invoiceNumber,
+
+                    reason,
+
+                },
+
+            });
+
+            return purchase;
+
+        }
+
+    );
+
 };
 

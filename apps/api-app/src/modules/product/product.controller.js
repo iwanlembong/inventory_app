@@ -120,6 +120,34 @@ exports.findAll = async (
 
 };
 
+exports.getDropdown = async (
+    req,
+    res
+) => {
+
+    try {
+
+        const result =
+            await service.getDropdown(
+                req.user.tenantId
+            );
+
+        res.json({
+            success: true,
+            data: result,
+        });
+
+    } catch (err) {
+
+        res.status(500).json({
+            success: false,
+            message: err.message,
+        });
+
+    }
+
+};
+
 
 exports.findById = async (req, res) => {
 

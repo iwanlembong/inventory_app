@@ -35,6 +35,14 @@ router.get(
   controller.getNextInvoiceNumber
 );
 
+/* ===================================================== */
+/* DOWNLOAD PDF                                          */
+/* ===================================================== */
+router.get(
+    "/:id/pdf",
+    authMiddleware,
+    controller.downloadPdf
+);
 
 /* ===================================================== */
 /* GET SALE BY ID                                        */

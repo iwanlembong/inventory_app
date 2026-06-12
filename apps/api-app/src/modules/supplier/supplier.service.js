@@ -1,5 +1,7 @@
 const { prisma } = require("@inventory/database");
 
+const { AUDIT_ACTIONS } = require("../../constants/audit.constants");
+
 const {
   createAuditLog,
 } = require("../../utils/audit");
@@ -50,7 +52,7 @@ exports.create = async (
 
     userId,
 
-    action: "CREATE",
+    action: AUDIT_ACTIONS.CREATE_SUPPLIER,
 
     entity: "SUPPLIER",
 
@@ -230,7 +232,7 @@ exports.update = async (
 
     userId,
 
-    action: "UPDATE",
+    action: AUDIT_ACTIONS.UPDATE_SUPPLIER,
 
     entity: "SUPPLIER",
 
@@ -271,7 +273,7 @@ exports.remove = async (
 
     userId,
 
-    action: "DELETE",
+    action: AUDIT_ACTIONS.DELETE_SUPPLIER,
 
     entity: "SUPPLIER",
 

@@ -120,6 +120,67 @@ exports.findById = async (
 
 };
 
+exports.search = async (
+    req,
+    res,
+    next
+) => {
+
+    try {
+
+        const result =
+            await service.search(
+
+                req.query.q || "",
+
+                req.user.tenantId
+
+            );
+
+        res.json({
+            success: true,
+            data: result,
+        });
+
+    } catch (err) {
+
+        next(err);
+
+    }
+
+};
+
+/* ====================================== */
+/* DEATIL FOR RETURN                      */
+/* ====================================== */
+exports.getDetailForReturn =
+    async (
+        req,
+        res,
+        next
+    ) => {
+
+        try {
+
+            const result =
+                await service.getDetailForReturn(
+                    Number(req.params.id),
+                    req.user.tenantId
+                );
+
+            res.json({
+                success: true,
+                data: result,
+            });
+
+        } catch (err) {
+
+            next(err);
+
+        }
+
+    };
+
 exports.downloadPdf =
     async (
         req,
@@ -164,3 +225,31 @@ exports.downloadPdf =
         }
 
     };
+
+exports.cancel = async (req, res) => {
+
+    const result =
+        await service.cancel(
+
+            req.params.id,
+
+            req.user.tenantId,
+
+            req.user.userId,
+
+            req.body.reason
+
+        );
+
+    res.json({
+
+        success: true,
+
+        message:
+            "Purchase cancelled",
+
+        data: result,
+
+    });
+
+};

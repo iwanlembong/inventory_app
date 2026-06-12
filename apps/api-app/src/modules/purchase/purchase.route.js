@@ -21,6 +21,20 @@ router.get(
   controller.findAll
 );
 
+router.get(
+    "/search",
+    authMiddleware,
+    controller.search
+);
+
+/* ====================================== */
+/* PURCHASE DEATIL RETURN                 */
+/* ====================================== */
+router.get(
+    "/:id/return",
+    authMiddleware,
+    controller.getDetailForReturn
+);
 
 router.get(
   "/:id",
@@ -32,6 +46,12 @@ router.get(
     "/:id/pdf",
     authMiddleware,
     controller.downloadPdf
+);
+
+router.patch(
+    "/:id/cancel",
+    authMiddleware,
+    controller.cancel
 );
 
 module.exports = router;

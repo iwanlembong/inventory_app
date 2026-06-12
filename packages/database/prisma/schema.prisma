@@ -33,6 +33,10 @@ model Tenant {
   suppliers      Supplier[]
   purchases      Purchase[]
   sales          Sale[]
+  saleReturns    SaleReturn[]
+  purchaseReturns PurchaseReturn[]
+  expenses       Expense[]
+  customers      Customer[]
 
   createdAt DateTime @default(now())
 }
@@ -103,6 +107,8 @@ model Product {
 
   stock Int @default(0)
 
+  minimumStock Int @default(5)
+
   costPrice    Decimal @db.Decimal(10, 2)
   sellingPrice Decimal @db.Decimal(10, 2)
 
@@ -131,7 +137,11 @@ enum StockMovementType {
 
 enum StockSourceType {
   PURCHASE
+  PURCHASE_CANCEL
   SALE
+  SALE_CANCEL
+  SALE_RETURN
+  PURCHASE_RETURN
   ADJUSTMENT
 }
 
@@ -198,22 +208,22 @@ enum PurchaseStatus {
 model Purchase {
   id Int @id @default(autoincrement())
 
-  tenantId Int
+  tenantId   Int
   supplierId Int
 
   invoiceNumber String
 
-  subtotal Decimal @default(0) @db.Decimal(12,2)
+  subtotal Decimal @default(0) @db.Decimal(12, 2)
 
-  discount Decimal @default(0) @db.Decimal(5,2)
+  discount Decimal @default(0) @db.Decimal(5, 2)
 
-  discountAmount Decimal @default(0) @db.Decimal(12,2)
+  discountAmount Decimal @default(0) @db.Decimal(12, 2)
 
-  tax Decimal @default(0) @db.Decimal(5,2)
+  tax Decimal @default(0) @db.Decimal(5, 2)
 
-  taxAmount Decimal @default(0) @db.Decimal(12,2)
+  taxAmount Decimal @default(0) @db.Decimal(12, 2)
 
-  totalAmount Decimal @db.Decimal(12,2)
+  totalAmount Decimal @db.Decimal(12, 2)
 
   status PurchaseStatus @default(COMPLETED)
 
@@ -222,6 +232,8 @@ model Purchase {
   tenant Tenant @relation(fields: [tenantId], references: [id])
 
   items PurchaseItem[]
+
+  purchaseReturns PurchaseReturn[]
 
   createdAt DateTime @default(now())
 }
@@ -241,17 +253,57 @@ model PurchaseItem {
   purchase Purchase @relation(fields: [purchaseId], references: [id])
 
   product Product @relation(fields: [productId], references: [id])
+
+  purchaseReturnItems PurchaseReturnItem[]
 }
+
+model PurchaseReturn {
+
+  id Int @id @default(autoincrement())
+
+  tenantId Int
+
+  purchaseId Int
+
+  returnNumber String
+
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  purchase Purchase @relation(fields: [purchaseId], references: [id])
+
+  items PurchaseReturnItem[]
+
+  @@index([tenantId])
+  @@index([purchaseId])
+}
+
+model PurchaseReturnItem {
+
+  id Int @id @default(autoincrement())
+
+  purchaseReturnId Int
+
+  purchaseItemId Int
+
+  quantity Int
+
+  purchaseReturn PurchaseReturn @relation(fields: [purchaseReturnId], references: [id])
+
+  purchaseItem PurchaseItem @relation(fields: [purchaseItemId], references: [id])
+
+  @@index([purchaseReturnId])
+  @@index([purchaseItemId])
+}
+
 
 enum SalesStatus {
   PENDING
   PAID
   CANCELLED
-}
-
-enum SaleStatus {
-  PAID
-  VOIDED
 }
 
 model Sale {
@@ -260,6 +312,8 @@ model Sale {
   tenantId Int
 
   userId Int
+
+  customerId    Int?
 
   invoiceNumber String
 
@@ -271,7 +325,10 @@ model Sale {
 
   user User @relation(fields: [userId], references: [id])
 
-  items SaleItem[]
+  customer      Customer? @relation(fields: [customerId], references: [id])
+
+  items   SaleItem[]
+  returns SaleReturn[]
 
   createdAt DateTime @default(now())
 }
@@ -285,6 +342,8 @@ model SaleItem {
 
   quantity Int
 
+  costPrice Decimal? @db.Decimal(10,2)
+
   sellingPrice Decimal @db.Decimal(10, 2)
 
   subtotal Decimal @db.Decimal(12, 2)
@@ -292,6 +351,28 @@ model SaleItem {
   sale Sale @relation(fields: [saleId], references: [id])
 
   product Product @relation(fields: [productId], references: [id])
+
+  returnItems SaleReturnItem[]
+}
+
+model Customer {
+
+  id          Int      @id @default(autoincrement())
+
+  tenantId    Int
+
+  name        String
+  email       String?
+  phone       String?
+  address     String?
+  notes     String?
+
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+
+  sales       Sale[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model AuditLog {
@@ -315,11 +396,73 @@ model AuditLog {
 model InvoiceSequence {
   id        Int      @id @default(autoincrement())
   tenantId  Int
-  prefix    String   // PUR
-  dateKey   String   // 20260604
-  sequence  Int      // 1,2,3...
+  prefix    String // PUR
+  dateKey   String // 20260604
+  sequence  Int // 1,2,3...
   createdAt DateTime @default(now())
 
   @@unique([tenantId, prefix, dateKey, sequence])
   @@map("invoicesequence")
+}
+
+model SaleReturn {
+  id Int @id @default(autoincrement())
+
+  tenantId Int
+
+  saleId Int
+
+  returnNumber String
+
+  reason String?
+
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  sale Sale @relation(fields: [saleId], references: [id])
+
+  items SaleReturnItem[]
+
+  @@index([tenantId])
+  @@index([saleId])
+}
+
+model SaleReturnItem {
+  id Int @id @default(autoincrement())
+
+  saleReturnId Int
+
+  saleItemId Int
+
+  quantity Int
+
+  saleReturn SaleReturn @relation(fields: [saleReturnId], references: [id])
+
+  saleItem SaleItem @relation(fields: [saleItemId], references: [id])
+
+  @@index([saleReturnId])
+  @@index([saleItemId])
+}
+
+model Expense {
+  id Int @id @default(autoincrement())
+
+  tenantId    Int
+
+  category    String
+  description String?
+
+  amount      Decimal  @db.Decimal(18,2)
+
+  expenseDate DateTime
+
+  createdBy Int?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tenant      Tenant @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([expenseDate])
 }
